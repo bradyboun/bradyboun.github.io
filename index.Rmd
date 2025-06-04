@@ -13,6 +13,11 @@ Dr. Brian Gill
 
 ```{r load-packages, message=FALSE, echo=FALSE}
 library(tidyverse)
+library(dplyr)
+library(lubridate)
+library(sf)
+WA_county <- read.csv("WA_county.csv")
+significance_table <- read.csv("my_table.csv")
 ```
 
 ```{r include-iframe, echo=FALSE, results='asis'}
@@ -102,8 +107,55 @@ knitr::include_app("https://bradybo.shinyapps.io/Synthesized_Dashboard/",
 **Statistical Methods**
 
 <span style="font-size:18px">
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Simple linear regression was used to examine the relationship between the year and the average temperature for each county. Linear regression was used on a line graph with Year being the x-axis and Average Temperature being the y-axis. This method was used because it allows us to easily see the overall trend of average temperature across the years.  While simple linear regression is typically used to create the best predictive model of data and prioritizes a high R2 value, we used it to identify significant relationships between each county’s temperature and a particular month. As such, we are more concerned about the p value for each individual relationship instead of the overall model fit. This will allow us to see the overall trend average temperature over the years and if the linear regression line is positive or negative. However, it’s hard to determine by eye whether a regression line on the line graph is significant or not, so a table was created to place each regression line into its respective category.  
-
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Simple linear regression was used to examine the relationship between the year and the average temperature for each county. Linear regression was used on a line graph with Year being the x-axis and Average Temperature being the y-axis. This method was used because it allows us to easily see the overall trend of average temperature across the years.  While simple linear regression is typically used to create the best predictive model of data and prioritizes a high R2 value, we used it to identify significant relationships between each county’s temperature and a particular month. As such, we are more concerned about the p value for each individual relationship instead of the overall model fit. This will allow us to see the overall trend average temperature over the years and if the linear regression line is positive or negative. However, it’s hard to determine by eye whether a regression line on the line graph is significant or not, so a table was created to place each regression line into its respective category.
+```{r code-chunk-label, echo=FALSE, warning=FALSE}
+  selected_month = "July"
+  selected_county = "King County"
+  month_num <- match(selected_month, month.name)
+  
+  data <- WA_county |>
+    filter(COUNTY == selected_county) |>
+    mutate(Year = year(DATE))
+  
+  # If a specific month is selected, filter by month
+  if (selected_month != "All Months") {
+    data <- data |> filter(month(DATE) == month_num)
+  }
+  
+  data <- data |>
+    group_by(Year) |>
+    summarise(TAVG = mean(TAVG, na.rm = TRUE)) |>
+    arrange(Year)
+  
+  model <- lm(TAVG ~ Year, data = data)
+  
+  pred_1985 <- predict(model, newdata = data.frame(Year = 1985))
+  pred_2024 <- predict(model, newdata = data.frame(Year = 2024))
+  
+  # Calculate the difference
+  temp_change <- round(pred_2024 - pred_1985, 3)
+  
+  # Add hover text
+  data <- data |>
+    mutate(hover_text = paste("Year: ", Year, "<br>", "Avg Temp: ", round(TAVG, 2), "°F"))
+  
+  # Plot
+  ggplot(data, aes(x = Year, y = TAVG)) +
+    geom_line(color = "steelblue", size = 1.2) +
+    geom_point(aes(text = hover_text), color = "darkblue") +
+    geom_smooth(method = "lm", se = FALSE, color = "firebrick", linetype = "dashed") +
+    labs(
+      title = paste0(
+        "Avg Temp Over Time in ", selected_county,
+        if (!is.na(temp_change)) paste0(" (Change: ", round(temp_change/49, 3), "F per year)"),
+        ""
+      ),
+      y = "Average Temp (F)",
+      x = "Year"
+    ) +
+    theme_minimal()
+```
+<br>
 <span style="font-size:18px">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Multiple regression was used to examine the relationship between our independent variables (year, radiative forcing, and sea surface temperature anomaly) and our dependent variables (global temperature anomalies and Washington’s annual temperature). Multi variable regression was used because climate change is simultaneously impacted by many factors; looking at a single predictor would not be the best fit as multiple forces are present in climate change. One of the key assumptions of multiple regression that must be fulfilled to produce valid results is that there is no multicollinearity. Multicollinearity occurs when two or more of the independent variables are highly correlated with one another and introduces redundancy (multiple variables measuring the same thing) into the model, which can bias the results. Given that radiative forcing and sea surface temperature have been steadily increasing over time, multicollinearity is bound to occur. 
 
@@ -133,7 +185,19 @@ knitr::include_app("https://bradybo.shinyapps.io/Synthesized_Dashboard/",
 **Washington County-Level Temperature Regression**
 
 <span style="font-size:18px">
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Linear regression was used to test H3 by evaluating the average temperature across the years 1975 to 2024, per month, for each county. Individual regression models were created for each pairing of county and month to evaluate the statistical significance of the relationship between the given month and the county’s average temperature (for example, one model may examine July-specific temperature for King County using the year to predict the average temperature). A table was created containing the count of significant positive regression lines, significant negative regression lines, and insignificant regression lines. [ADD TABLE HERE?] When comparing the counties to each other, we found that most counties had around the same number of months containing statistically significant positive regression models. However, looking at the amount of positive regression lines per month, the analysis showed that the summer months, (June, July, and August) plus May and September, contained notably more significant positive regression lines compared to other all the other months. Looking at the summer months’ significant positive regression counts, May had 14, June had 8, July had 32, August had 26, and September had 17. There were a few significant negative regression lines, but upon further analysis, those negative regression lines were created from counties missing data for some years, which skewed the regression lines down.  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Linear regression was used to test H3 by evaluating the average temperature across the years 1975 to 2024, per month, for each county. Individual regression models were created for each pairing of county and month to evaluate the statistical significance of the relationship between the given month and the county’s average temperature (for example, one model may examine July-specific temperature for King County using the year to predict the average temperature). A table was created containing the count of significant positive regression lines, significant negative regression lines, and insignificant regression lines.
+```{r, echo=FALSE, warning=FALSE}
+significance_table <- significance_table |>
+  rename(
+    Sig_Counties = Significant_Counties,
+    Positive_Slope = Positive_Slope_Counties,
+    Negative_Slope = Negative_Slope_Counties
+         )
+significance_table
+```
+<br>
+<span style="font-size:18px">
+When comparing the counties to each other, we found that most counties had around the same number of months containing statistically significant positive regression models. However, looking at the amount of positive regression lines per month, the analysis showed that the summer months, (June, July, and August) plus May and September, contained notably more significant positive regression lines compared to other all the other months. Looking at the summer months’ significant positive regression counts, May had 14, June had 8, July had 32, August had 26, and September had 17. There were a few significant negative regression lines, but upon further analysis, those negative regression lines were created from counties missing data for some years, which skewed the regression lines down.  
 
 <div style="text-align: center;">
 # Discussion
@@ -277,10 +341,6 @@ Trumbore, S., Brando, P., & Hartmann, H. (2015). Forest health and global change
 <span style="font-size:18px">
 Turrentine, J. (2022, December 13). What Are the Solutions to Climate Change? NRDC. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;https://www.nrdc.org/stories/what-are-solutions-climate-change 
 
- 
 
-
-```{r code-chunk-label, echo=FALSE}
-# Insert code for Exercise 1 here
 ```
 

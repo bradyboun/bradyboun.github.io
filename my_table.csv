@@ -1,0 +1,14 @@
+"","Month","Significant_Counties","Positive_Slope_Counties","Negative_Slope_Counties","Not_Significant"
+"1","All Months",2,2,0,35
+"2","January",10,10,0,27
+"3","February",1,0,1,36
+"4","March",0,0,0,37
+"5","April",3,1,2,34
+"6","May",14,14,0,23
+"7","June",8,8,0,29
+"8","July",32,32,0,5
+"9","August",26,26,0,11
+"10","September",17,17,0,20
+"11","October",3,3,0,34
+"12","November",1,1,0,36
+"13","December",0,0,0,37
