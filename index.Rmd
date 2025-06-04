@@ -1,6 +1,6 @@
 <div style="text-align: center;">
 
-# Investigating the effects of climate change on a global and local level in Washington State
+# Investigating the Effects of Climate Change on a Global and Local Level in Washington State
 
 **Brady Boun, Jonah Byther, Mateo Cuadros, and Lainey Mendoza**
 
@@ -11,13 +11,20 @@ DAT4500: Data and Society
 Dr. Brian Gill 
 
 
-```{r load-packages, message=FALSE, echo=FALSE}
+```{r load-packages, echo=FALSE, message=FALSE, warning=FALSE}
 library(tidyverse)
 library(dplyr)
 library(lubridate)
 library(sf)
+library(apaTables)
+library(factoextra)
+library(corrr)
+library(ggcorrplot)
+library(FactoMineR)
 WA_county <- read.csv("WA_county.csv")
 significance_table <- read.csv("my_table.csv")
+joined_global_data <- read.csv("joined_global_data.csv")
+cleaned_wa_pca <- read.csv("cleaned_wa_pca.csv")
 ```
 
 ```{r include-iframe, echo=FALSE, results='asis'}
@@ -108,7 +115,7 @@ knitr::include_app("https://bradybo.shinyapps.io/Synthesized_Dashboard/",
 
 <span style="font-size:18px">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Simple linear regression was used to examine the relationship between the year and the average temperature for each county. Linear regression was used on a line graph with Year being the x-axis and Average Temperature being the y-axis. This method was used because it allows us to easily see the overall trend of average temperature across the years.  While simple linear regression is typically used to create the best predictive model of data and prioritizes a high R2 value, we used it to identify significant relationships between each county’s temperature and a particular month. As such, we are more concerned about the p value for each individual relationship instead of the overall model fit. This will allow us to see the overall trend average temperature over the years and if the linear regression line is positive or negative. However, it’s hard to determine by eye whether a regression line on the line graph is significant or not, so a table was created to place each regression line into its respective category.
-```{r code-chunk-label, echo=FALSE, warning=FALSE}
+```{r code-chunk-label, echo=FALSE, message=FALSE, warning=FALSE}
   selected_month = "July"
   selected_county = "King County"
   month_num <- match(selected_month, month.name)
@@ -145,7 +152,8 @@ knitr::include_app("https://bradybo.shinyapps.io/Synthesized_Dashboard/",
     geom_point(aes(text = hover_text), color = "darkblue") +
     geom_smooth(method = "lm", se = FALSE, color = "firebrick", linetype = "dashed") +
     labs(
-      title = paste0(
+      title = "Example of an Individual County Model",
+      subtitle = paste0(
         "Avg Temp Over Time in ", selected_county,
         if (!is.na(temp_change)) paste0(" (Change: ", round(temp_change/49, 3), "F per year)"),
         ""
@@ -171,15 +179,44 @@ knitr::include_app("https://bradybo.shinyapps.io/Synthesized_Dashboard/",
 
 <span style="font-size:18px">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;To test for multicollinearity between year, sea surface temperature, and radiative forcing, we computed a correlation matrix and observed the following relationships: year and sea surface temperature were highly positively correlated, r (43) = .90, p < .001. Year and radiative forcing were highly positively correlated, r (43) = 1.00, p < .001. Finally, sea surface temperature and radiative forcing were highly positively correlated, r (43) = .90, p < .001. Given the extreme correlation between these variables, we used principal component analysis to create new independent predictor variables. 
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+#Correlation table
+cleaned_wa_pca |> 
+  select(Year, Sea_Surface_Temp_Anomaly, Total_Rad_Force) |> 
+  apa.cor.table()
+```
 
 <span style="font-size:18px">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The principal component analysis produced three factors which explain 100% of the variation in the correlation matrix. Component 1 (95.4% of variance) was loaded by the year (Year = .58), sea surface temperature (Sea_Surface_Temp_Anomaly = .56), and radiative forcing (Total_Rad_Force = .58). Component 2 (4.6% of variance) was loaded by the year (Year = .40), sea surface temperature (Sea_Surface_Temp_Anomaly = -.83), and radiative forcing (Total_Rad_Force = .40). Component 3 (0.04% of variance) was loaded by the year (Year = .71) and radiative forcing (Total_Rad_Force = -.71). 
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+#Loading and Screen Plot
+datCombo <- cleaned_wa_pca |> 
+  select(Year, Sea_Surface_Temp_Anomaly, Total_Rad_Force)
+normCombo <- scale(datCombo)
+data.pca <- princomp(normCombo)
+data.pca$loadings[, 1:3]
+fviz_eig(data.pca, addlabels = TRUE)
+```
 
 <span style="font-size:18px">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Using these three new factors, we used multiple regression to test H1. This yielded a statistically significant model, F (3, 41) = 337.8, p < .001, R2 = .96, adjusted R2 = .96. The individual independent variables were investigated further, indicating that component 1 (t = 31.08, p < .001) and component 2 (t = -6.88, p < .001) were statistically significant, while component 3 (t = .25, p = .81) is not significant. 
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+#Global model
+global_numerical_data <- joined_global_data |>
+  select(Year, Sea_Surface_Temp_Anomaly, Total_Rad_Force)
+global_normalized_data <- scale(global_numerical_data)
+pca_global <- princomp(global_normalized_data)
+anom_pca_regression <- lm(Temperature_anomaly ~ pca_global$scores, data = joined_global_data)
+summary(anom_pca_regression)
+```
 
 <span style="font-size:18px">
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Multiple regression was then used to test H2, which resulted in a significant model, F (3, 41) = 8.81, p < .001, R2 = .39, adjusted R2 = .35. The individual predictors were examined further, indicating that the component 1 (t = 3.74, p < .001), and component 2 (t = -2.95, p = .005) were statistically significant, but component 3 (t = -1.92, p = .06) was not. Given that the third component was not statistically significant, we ran a second multiple regression model without the third component to see if this produced a better model. The second model was significant, F (2, 42) = 10.68, p < .001, R2 = .34, adjusted R2 = .31. Both component 1 (t = 3.63, p < .001) and component 2 (t = -2.86, p = .007) were statistically significant. Considering that the second model with only two predictors has a lower adjusted R2 than the first model with three predictors, the first model was kept as the better explanatory model. 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Multiple regression was then used to test H2, which resulted in a significant model, F (3, 41) = 8.81, p < .001, R2 = .39, adjusted R2 = .35. The individual predictors were examined further, indicating that the component 1 (t = 3.74, p < .001), and component 2 (t = -2.95, p = .005) were statistically significant, but component 3 (t = -1.92, p = .06) was not. 
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+#WA model
+pcModel <- lm(Temp ~ data.pca$scores, data = cleaned_wa_pca)
+summary(pcModel)
+```
 
 <span style="font-size:22px">
 **Washington County-Level Temperature Regression**
