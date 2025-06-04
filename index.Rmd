@@ -235,6 +235,9 @@ Jaadi, Z., & Whitfield, B. (2024, February 23). Principal component analysis (PC
 <span style="font-size:18px">
 Kelta, Z. (2023, February 13). Principal component analysis in R tutorial. Data Camp. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;https://www.datacamp.com/tutorial/pca-analysis-r. 
 
+<span style="font-size:18px">
+Lindsey, R. (2009, January 14). Climate and Earth’s Energy Budget. NASA. 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;https://earthobservatory.nasa.gov/features/EnergyBalance#.
  
 <span style="font-size:18px">
 Lindsey, R., & Dahlman, L. (2023, September 6). Climate change: Ocean heat content. NOAA Climate.gov. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;https://www.climate.gov/news-features/understanding-climate/climate-change-ocean-heat-content. 
@@ -275,9 +278,6 @@ Trumbore, S., Brando, P., & Hartmann, H. (2015). Forest health and global change
 Turrentine, J. (2022, December 13). What Are the Solutions to Climate Change? NRDC. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;https://www.nrdc.org/stories/what-are-solutions-climate-change 
 
  
-<span style="font-size:18px">
-Lindsey, R. (2009, January 14). Climate and Earth’s Energy Budget. NASA. 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;https://earthobservatory.nasa.gov/features/EnergyBalance#. 
 
 
 ```{r code-chunk-label, echo=FALSE}
