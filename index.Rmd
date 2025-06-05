@@ -209,6 +209,29 @@ global_normalized_data <- scale(global_numerical_data)
 pca_global <- princomp(global_normalized_data)
 anom_pca_regression <- lm(Temperature_anomaly ~ pca_global$scores, data = joined_global_data)
 summary(anom_pca_regression)
+
+joined_global_data |>
+  ggplot(aes(x = Year, y = Temperature_anomaly)) + 
+  geom_line(linewidth = .5) +
+  geom_smooth(method = "lm") +
+  geom_point(aes(color = Sea_Surface_Temp_Anomaly, size = Total_Rad_Force)) +
+  geom_point(aes(size = Total_Rad_Force), shape = 1, stroke = .85) +
+  scale_color_gradientn(colors = c("yellow", 'red', "red4"), name = "Sea Surface\nTemperature\nAnomaly (°F)") +
+  scale_size(range = c(1,5), name = "Global Radiative\nForcing (W/m^2)") +
+labs(
+    title = "Predictors of Global Temperature Anomalies",
+    subtitle =
+      "Visualizing the impacts of sea surface temperature and global radiative forcing on global temperature anomalies over time",
+    caption = 
+    "This graph depicts the original year, sea surface temperature, and radiaitve forcing variables prior to PCA;\nthe principle components are not shown in this graph. Instead, this graph visualizes the strong linear\nrelationship between all three variables and global temperature.") +
+  xlab("Year") +
+  ylab("Temperature Anomaly (°C)") +
+  theme_classic() +
+  theme(
+    plot.title.position = "plot",
+    plot.caption.position = "plot",
+    plot.caption = element_text(hjust = 0)
+  )
 ```
 
 <span style="font-size:18px">
