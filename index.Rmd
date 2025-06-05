@@ -115,6 +115,7 @@ knitr::include_app("https://bradybo.shinyapps.io/Synthesized_Dashboard/",
 
 <span style="font-size:18px">
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Simple linear regression was used to examine the relationship between the year and the average temperature for each county. Linear regression was used on a line graph with Year being the x-axis and Average Temperature being the y-axis. This method was used because it allows us to easily see the overall trend of average temperature across the years.  While simple linear regression is typically used to create the best predictive model of data and prioritizes a high R2 value, we used it to identify significant relationships between each county’s temperature and a particular month. As such, we are more concerned about the p value for each individual relationship instead of the overall model fit. This will allow us to see the overall trend average temperature over the years and if the linear regression line is positive or negative. However, it’s hard to determine by eye whether a regression line on the line graph is significant or not, so a table was created to place each regression line into its respective category.
+
 ```{r code-chunk-label, echo=FALSE, message=FALSE, warning=FALSE}
   selected_month = "July"
   selected_county = "King County"
