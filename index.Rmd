@@ -257,6 +257,46 @@ significance_table <- significance_table |>
          )
 significance_table
 ```
+
+```{r, echo=FALSE, warning=FALSE}
+significance_table$Month <- factor(significance_table$Month, levels = month.name)
+
+long_data <- significance_table |>
+  pivot_longer(
+    cols = c(Negative_Slope, Not_Significant, Positive_Slope),
+    names_to = "Category",
+    values_to = "Count"
+  )
+
+long_data$Category <- factor(long_data$Category, levels = c("Negative_Slope",
+                                                            "Not_Significant",
+                                                            "Positive_Slope"))
+
+month_order <- c("January", "February", "March", "April", "May", "June",
+                 "July", "August", "September", "October", "November", "December")
+
+long_data$Month <- factor(long_data$Month, levels = month_order)
+
+ggplot(long_data, aes(x = Month, y = Count, fill = Category)) +
+  geom_col() +
+  scale_fill_manual(
+    values = c(
+      "Positive_Slope" = "#FF0000",
+      "Not_Significant" = "#808080",
+      "Negative_Slope" = "#0000FF"
+    )
+  )+
+  labs(
+    title = "Monthly Regression Summary Across Counties",
+    x = "Month",
+    y = "Number of Counties",
+    fill = "Category"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
 <br>
 <span style="font-size:18px">
 When comparing the counties to each other, we found that most counties had around the same number of months containing statistically significant positive regression models. However, looking at the amount of positive regression lines per month, the analysis showed that the summer months, (June, July, and August) plus May and September, contained notably more significant positive regression lines compared to other all the other months. Looking at the summer months’ significant positive regression counts, May had 14, June had 8, July had 32, August had 26, and September had 17. There were a few significant negative regression lines, but upon further analysis, those negative regression lines were created from counties missing data for some years, which skewed the regression lines down.  
